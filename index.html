@@ -18,23 +18,22 @@
       min-height: 100vh;
       color: #333;
     }
+
     h1 {
       margin-bottom: 1.5rem;
       font-weight: 600;
       color: #1e293b;
     }
 
-    /* Card container with perspective for 3D flip */
     #card-container {
       perspective: 1000px;
       width: 90%;
       max-width: 400px;
-      height: 220px;
+      height: 240px;
       margin-bottom: 1.5rem;
       cursor: pointer;
     }
 
-    /* The flipping card */
     #card {
       width: 100%;
       height: 100%;
@@ -47,19 +46,19 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.8rem;
-      font-weight: 600;
       user-select: none;
       transform-style: preserve-3d;
       transition: transform 0.6s;
+      padding: 1rem;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      hyphens: auto;
     }
 
-    /* Card flipped state */
     #card.flipped {
       transform: rotateY(180deg);
     }
 
-    /* Front and back faces */
     .side {
       position: absolute;
       width: 100%;
@@ -71,17 +70,21 @@
       border-radius: 15px;
       padding: 1rem;
       box-sizing: border-box;
+      font-size: 1.2rem;
+      line-height: 1.5;
+      text-align: center;
     }
+
     .front {
       background: #fff;
     }
+
     .back {
       background: #3b82f6;
       color: white;
       transform: rotateY(180deg);
     }
 
-    /* Buttons container */
     #buttons {
       display: flex;
       gap: 0.8rem;
@@ -91,7 +94,6 @@
       max-width: 400px;
     }
 
-    /* Buttons */
     button {
       flex: 1 1 120px;
       padding: 0.75rem 1rem;
@@ -106,21 +108,21 @@
       user-select: none;
       transition: background-color 0.3s ease;
     }
+
     button:hover {
       background: #2563eb;
     }
+
     button:active {
       background: #1e40af;
     }
 
-    /* Progress text */
     #progress {
       margin-top: 1rem;
       font-size: 1rem;
       color: #64748b;
       font-weight: 500;
     }
-
   </style>
 </head>
 <body>
@@ -149,7 +151,6 @@
     let currentIndex = 0;
     let flipped = false;
 
-    // Fetch and parse CSV from Google Sheets
     fetch(sheetURL)
       .then(res => res.text())
       .then(text => {
@@ -164,7 +165,6 @@
         document.getElementById('card-front').textContent = "Error loading cards.";
       });
 
-    // Basic CSV parser (handles commas inside quotes)
     function parseCSV(text) {
       const lines = text.trim().split('\n');
       const rows = lines.map(line => {
@@ -214,7 +214,6 @@
 
     function shuffleCards() {
       if (cards.length === 0) return;
-      // Fisher-Yates shuffle
       for (let i = cards.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [cards[i], cards[j]] = [cards[j], cards[i]];
