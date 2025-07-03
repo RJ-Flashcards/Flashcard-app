@@ -165,13 +165,10 @@
         document.getElementById('card-front').textContent = "Error loading cards.";
       });
 
+    // Simple parser for comma-separated rows
     function parseCSV(text) {
       const lines = text.trim().split('\n');
-      const rows = lines.map(line => {
-        const regex = /(".*?"|[^",\s]+)(?=\s*,|\s*$)/g;
-        return line.match(regex).map(cell => cell.replace(/^"|"$/g, ''));
-      });
-      return rows;
+      return lines.map(line => line.split(','));
     }
 
     function showNoCards() {
