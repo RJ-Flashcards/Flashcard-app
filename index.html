@@ -29,9 +29,10 @@
       perspective: 1000px;
       width: 90%;
       max-width: 400px;
-      height: 240px;
+      height: 180px; /* smaller height */
       margin-bottom: 1.5rem;
       cursor: pointer;
+      overflow: hidden;
     }
 
     #card {
@@ -50,7 +51,7 @@
       transform-style: preserve-3d;
       transition: transform 0.6s;
       padding: 1rem;
-      overflow-wrap: break-word;
+      overflow-y: auto; /* scroll if content too long */
       word-wrap: break-word;
       hyphens: auto;
     }
