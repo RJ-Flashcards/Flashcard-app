@@ -2,51 +2,150 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Vocabulary Flashcards</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
     body {
-      font-family: sans-serif;
-      background: #f3f3f3;
+      font-family: 'Inter', sans-serif;
+      background: #f0f4f8;
       margin: 0;
       padding: 2rem;
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 100vh;
+      color: #333;
     }
-    #card {
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+
+    h1 {
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    #card-container {
+      perspective: 1000px;
       width: 90%;
       max-width: 400px;
-      padding: 2rem;
-      text-align: center;
+      height: 180px;
+      margin-bottom: 1.5rem;
       cursor: pointer;
-      margin-bottom: 1rem;
+      overflow: hidden;
     }
-    button {
-      margin: 0.5rem;
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: 5px;
-      background: #007bff;
+
+    #card {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      text-align: center;
+      border-radius: 15px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+      background: white;
+      color: #111827;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      transform-style: preserve-3d;
+      transition: transform 0.6s;
+      padding: 1rem;
+      overflow-y: auto;
+      word-wrap: break-word;
+      hyphens: auto;
+    }
+
+    #card.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .side {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 15px;
+      padding: 1rem;
+      box-sizing: border-box;
+      font-size: 1.1rem;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .front {
+      background: #fff;
+    }
+
+    .back {
+      background: #3b82f6;
       color: white;
+      transform: rotateY(180deg);
     }
+
+    #buttons {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    button {
+      flex: 1 1 120px;
+      padding: 0.75rem 1rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      background: #3b82f6;
+      color: white;
+      box-shadow: 0 3px 6px rgba(59,130,246,0.5);
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+
     button:hover {
-      background: #0056b3;
+      background: #2563eb;
+    }
+
+    button:active {
+      background: #1e40af;
+    }
+
+    #progress {
+      margin-top: 1rem;
+      font-size: 1rem;
+      color: #64748b;
+      font-weight: 500;
     }
   </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
 </head>
 <body>
   <h1>Vocabulary Flashcards</h1>
-  <div id="card">Loading...</div>
-  <div>
+
+  <div id="card-container" tabindex="0" aria-label="Flashcard" role="button" onclick="flipCard()" onkeypress="if(event.key==='Enter') flipCard()">
+    <div id="card">
+      <div class="side front" id="card-front">Loading...</div>
+      <div class="side back" id="card-back"></div>
+    </div>
+  </div>
+
+  <div id="buttons">
     <button onclick="prevCard()">Previous</button>
     <button onclick="flipCard()">Flip</button>
     <button onclick="nextCard()">Next</button>
+    <button onclick="shuffleCards()">Shuffle</button>
   </div>
+
+  <div id="progress"></div>
 
   <script>
     const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQmE3pw_HoyMxaYwGdk7jTWzrR-BwAyR6POdJVD2ppjSyvuN64u4R-ms66pojH43LgWbZe1uPYzeG0w/pub?output=csv";
@@ -58,35 +157,68 @@
     fetch(sheetURL)
       .then(res => res.text())
       .then(text => {
-        const rows = text.trim().split('\n').map(r => r.split(','));
-        cards = rows;
+        const parsed = Papa.parse(text, {
+          header: false,
+          skipEmptyLines: true,
+        });
+
+        cards = parsed.data.map(row => [row[0]?.trim() || '', row[1]?.trim() || '']);
+        if (cards.length === 0) {
+          showNoCards();
+          return;
+        }
         showCard();
+      })
+      .catch(() => {
+        document.getElementById('card-front').textContent = "Error loading cards.";
       });
 
+    function showNoCards() {
+      document.getElementById('card-front').textContent = "No cards available.";
+      document.getElementById('card-back').textContent = "";
+      document.getElementById('progress').textContent = "";
+      document.getElementById('card').classList.remove('flipped');
+    }
+
     function showCard() {
-      if (cards.length === 0) {
-        document.getElementById('card').innerText = "No cards available.";
-        return;
-      }
+      flipped = false;
+      document.getElementById('card').classList.remove('flipped');
       const [front, back] = cards[currentIndex];
-      document.getElementById('card').innerText = flipped ? back : front;
+      document.getElementById('card-front').textContent = front;
+      document.getElementById('card-back').textContent = back;
+      updateProgress();
     }
 
     function flipCard() {
       flipped = !flipped;
-      showCard();
+      const card = document.getElementById('card');
+      card.classList.toggle('flipped', flipped);
     }
 
     function nextCard() {
+      if (cards.length === 0) return;
       currentIndex = (currentIndex + 1) % cards.length;
-      flipped = false;
       showCard();
     }
 
     function prevCard() {
+      if (cards.length === 0) return;
       currentIndex = (currentIndex - 1 + cards.length) % cards.length;
-      flipped = false;
       showCard();
+    }
+
+    function shuffleCards() {
+      if (cards.length === 0) return;
+      for (let i = cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cards[i], cards[j]] = [cards[j], cards[i]];
+      }
+      currentIndex = 0;
+      showCard();
+    }
+
+    function updateProgress() {
+      document.getElementById('progress').textContent = `Card ${currentIndex + 1} of ${cards.length}`;
     }
   </script>
 </body>
