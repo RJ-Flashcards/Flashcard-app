@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Vocabulary Flashcards</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
@@ -51,7 +51,7 @@
       transform-style: preserve-3d;
       transition: transform 0.6s;
       padding: 1rem;
-      overflow-y: auto; /* enable scroll for long definitions */
+      overflow-y: auto; /* scroll for long definitions */
       word-wrap: break-word;
       hyphens: auto;
     }
@@ -125,6 +125,9 @@
       font-weight: 500;
     }
   </style>
+
+  <!-- PapaParse library for CSV parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
 </head>
 <body>
   <h1>Vocabulary Flashcards</h1>
@@ -155,7 +158,11 @@
     fetch(sheetURL)
       .then(res => res.text())
       .then(text => {
-        cards = parseCSV(text);
+        const parsed = Papa.parse(text, {
+          header: false,
+          skipEmptyLines: true,
+        });
+        cards = parsed.data.map(row => [row[0] || '', row[1] || '']);
         if (cards.length === 0) {
           showNoCards();
           return;
@@ -165,16 +172,6 @@
       .catch(() => {
         document.getElementById('card-front').textContent = "Error loading cards.";
       });
-
-    function parseCSV(text) {
-      const lines = text.trim().split('\n');
-      return lines.map(line => {
-        const cols = line.split(',');
-        const front = (cols[0] || '').trim();
-        const back = cols.slice(1).join(',').trim();
-        return [front, back];
-      });
-    }
 
     function showNoCards() {
       document.getElementById('card-front').textContent = "No cards available.";
@@ -187,8 +184,9 @@
       flipped = false;
       document.getElementById('card').classList.remove('flipped');
       const [front, back] = cards[currentIndex];
-      document.getElementById('card-front').textContent = front || '';
-      document.getElementById('card-back').textContent = back || '';
+      console.log('Front:', front, 'Back:', back);  // Debug log
+      document.getElementById('card-front').textContent = front;
+      document.getElementById('card-back').textContent = back;
       updateProgress();
     }
 
