@@ -6,7 +6,7 @@
   <title>Vocabulary Flashcards</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-    
+
     body {
       font-family: 'Inter', sans-serif;
       background: #f0f4f8;
@@ -29,7 +29,7 @@
       perspective: 1000px;
       width: 90%;
       max-width: 400px;
-      height: 180px; /* smaller height */
+      height: 180px;
       margin-bottom: 1.5rem;
       cursor: pointer;
       overflow: hidden;
@@ -51,7 +51,7 @@
       transform-style: preserve-3d;
       transition: transform 0.6s;
       padding: 1rem;
-      overflow-y: auto; /* scroll for long definitions */
+      overflow-y: auto;
       word-wrap: break-word;
       hyphens: auto;
     }
@@ -71,8 +71,8 @@
       border-radius: 15px;
       padding: 1rem;
       box-sizing: border-box;
-      font-size: 1.2rem;
-      line-height: 1.5;
+      font-size: 1.1rem;
+      line-height: 1.4;
       text-align: center;
     }
 
@@ -126,7 +126,6 @@
     }
   </style>
 
-  <!-- PapaParse library for CSV parsing -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
 </head>
 <body>
@@ -140,13 +139,13 @@
   </div>
 
   <div id="buttons">
-    <button onclick="prevCard()" aria-label="Previous card">Previous</button>
-    <button onclick="flipCard()" aria-label="Flip card">Flip</button>
-    <button onclick="nextCard()" aria-label="Next card">Next</button>
-    <button onclick="shuffleCards()" aria-label="Shuffle cards">Shuffle</button>
+    <button onclick="prevCard()">Previous</button>
+    <button onclick="flipCard()">Flip</button>
+    <button onclick="nextCard()">Next</button>
+    <button onclick="shuffleCards()">Shuffle</button>
   </div>
 
-  <div id="progress" aria-live="polite"></div>
+  <div id="progress"></div>
 
   <script>
     const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQmE3pw_HoyMxaYwGdk7jTWzrR-BwAyR6POdJVD2ppjSyvuN64u4R-ms66pojH43LgWbZe1uPYzeG0w/pub?output=csv";
@@ -162,7 +161,8 @@
           header: false,
           skipEmptyLines: true,
         });
-        cards = parsed.data.map(row => [row[0] || '', row[1] || '']);
+
+        cards = parsed.data.map(row => [row[0]?.trim() || '', row[1]?.trim() || '']);
         if (cards.length === 0) {
           showNoCards();
           return;
@@ -184,7 +184,6 @@
       flipped = false;
       document.getElementById('card').classList.remove('flipped');
       const [front, back] = cards[currentIndex];
-      console.log('Front:', front, 'Back:', back);  // Debug log
       document.getElementById('card-front').textContent = front;
       document.getElementById('card-back').textContent = back;
       updateProgress();
@@ -193,11 +192,7 @@
     function flipCard() {
       flipped = !flipped;
       const card = document.getElementById('card');
-      if (flipped) {
-        card.classList.add('flipped');
-      } else {
-        card.classList.remove('flipped');
-      }
+      card.classList.toggle('flipped', flipped);
     }
 
     function nextCard() {
