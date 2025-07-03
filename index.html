@@ -51,7 +51,7 @@
       transform-style: preserve-3d;
       transition: transform 0.6s;
       padding: 1rem;
-      overflow-y: auto; /* scroll if content too long */
+      overflow-y: auto; /* enable scroll for long definitions */
       word-wrap: break-word;
       hyphens: auto;
     }
@@ -169,9 +169,9 @@
     function parseCSV(text) {
       const lines = text.trim().split('\n');
       return lines.map(line => {
-        const firstComma = line.indexOf(',');
-        const front = line.slice(0, firstComma).trim();
-        const back = line.slice(firstComma + 1).trim();
+        const cols = line.split(',');
+        const front = (cols[0] || '').trim();
+        const back = cols.slice(1).join(',').trim();
         return [front, back];
       });
     }
