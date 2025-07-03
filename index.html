@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vocabulary Flashcards</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f3f3f3;
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      width: 90%;
+      max-width: 400px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 1rem;
+    }
+    button {
+      margin: 0.5rem;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      background: #007bff;
+      color: white;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Vocabulary Flashcards</h1>
+  <div id="card">Loading...</div>
+  <div>
+    <button onclick="prevCard()">Previous</button>
+    <button onclick="flipCard()">Flip</button>
+    <button onclick="nextCard()">Next</button>
+  </div>
+
+  <script>
+    const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQmE3pw_HoyMxaYwGdk7jTWzrR-BwAyR6POdJVD2ppjSyvuN64u4R-ms66pojH43LgWbZe1uPYzeG0w/pub?output=csv";
+
+    let cards = [];
+    let currentIndex = 0;
+    let flipped = false;
+
+    fetch(sheetURL)
+      .then(res => res.text())
+      .then(text => {
+        const rows = text.trim().split('\n').map(r => r.split(','));
+        cards = rows;
+        showCard();
+      });
+
+    function showCard() {
+      if (cards.length === 0) {
+        document.getElementById('card').innerText = "No cards available.";
+        return;
+      }
+      const [front, back] = cards[currentIndex];
+      document.getElementById('card').innerText = flipped ? back : front;
+    }
+
+    function flipCard() {
+      flipped = !flipped;
+      showCard();
+    }
+
+    function nextCard() {
+      currentIndex = (currentIndex + 1) % cards.length;
+      flipped = false;
+      showCard();
+    }
+
+    function prevCard() {
+      currentIndex = (currentIndex - 1 + cards.length) % cards.length;
+      flipped = false;
+      showCard();
+    }
+  </script>
+</body>
+</html>
+
